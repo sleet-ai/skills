@@ -7,6 +7,7 @@ internal skills
 
 external skills
 - https://degenarena.gg/SKILL.md
+- claude: skill-creator
 
 ===============
 <br/>
