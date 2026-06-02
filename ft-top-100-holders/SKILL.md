@@ -13,7 +13,7 @@ Wrapper for the [FastNear API](https://api.fastnear.com) to retrieve top 100 hol
 GET https://api.fastnear.com/v1/ft/{token_ca}/top
 ```
 
-## curl Example
+## curl Examples
 
 ```bash
 # Generic fungible token
@@ -57,4 +57,23 @@ print(result)
 
 ## Response Shape
 
-Returns an array of holder objects with fields like `account_id`, `balance`, and `百分位` (percentage).
+```json
+{
+  "accounts": [
+    {
+      "account_id": "v2.ref-finance.near",
+      "balance": "370407158691774838759672414"
+    },
+    {
+      "account_id": "vault.huggies.near",
+      "balance": "100000000004066802850898668"
+    }
+  ],
+  "token_id": "shit-1170.meme-cooking.near"
+}
+```
+
+- `accounts`: Array of up to 100 holder objects sorted by balance (descending)
+- `account_id`: NEAR account identifier
+- `balance`: Token balance as a string (big number format)
+- `token_id`: The token contract account that was queried
