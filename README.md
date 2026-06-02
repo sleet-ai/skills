@@ -8,6 +8,8 @@ internal skills
 external skills
 - https://degenarena.gg/SKILL.md
 - claude: skill-creator
+- claude: https://github.com/anthropics/skills
+- 
 
 ===============
 <br/>
