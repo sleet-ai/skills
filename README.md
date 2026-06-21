@@ -12,6 +12,9 @@ external skills
 
 
 project skills - skills for personal projects
+- project-sleet-live
+- project-web3stick-sticksocial
+- project-
 - project
 
 ===============
