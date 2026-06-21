@@ -3,13 +3,16 @@
 personal skills libary playground
 
 internal skills
-- ft-top-100-holders
+- near-ft-top-100-holders
 
 external skills
 - https://degenarena.gg/SKILL.md
 - claude: skill-creator
 - claude: https://github.com/anthropics/skills
-- 
+
+
+project skills - skills for personal projects
+- project
 
 ===============
 <br/>
