@@ -12,19 +12,45 @@ Sibling testing playground: [`sleet-js/near-social-tool-box`](https://github.com
 
 ---
 
+## Resources
+
+- `web3stick/sticksocial` — the app under development (SvelteKit + Svelte 5 runes, adapter-static, Netlify).
+- `sleet-js/near-social-tool-box` — the testing playground. CLI bins in `bin-env/` exercise every wrapper against live mainnet data; mirror wrappers here before adding them to sticksocial.
+- `NEARBuilders/near-social-js` — the underlying TypeScript SDK against `social.near`. Read on GitHub or `npm view near-social-js`; types like `Post`, `Profile`, `Notification`, `IndexEntry` come from here.
+- `@near-kit-tool-box/web` — browser-side NEAR connection + wallet helper (used by sticksocial's `auth.svelte.ts` and `near_social_client(...)` factory).
+- `@near-kit-tool-box/env` — env-based NEAR client used by tool-box bins (`near_kit_env`).
+- Original NEAR Social widget registry — fetch source onchain via `bun run bin-env/main/get.ts -- 'mob.near/widget/<name>'` in the tool-box. Patterns from `N`, `Homepage`, `ProfileEditor`, `ProfilePage`, `MetadataEditor`, `ImageEditorTabs` are still useful.
+
+---
+
 ## 1. Working directory
 
-Keep two repos cloned side-by-side in a clean dev folder. Pull both before starting work so the wrapper/widget contract stays in sync.
+Use a working folder whose name ends in `_working_directory` so it never collides with the repo name itself (avoid `sticksocial/sticksocial`).
 
 ```bash
-mkdir -p ~/dev/sticksocial && cd ~/dev/sticksocial
-git clone https://github.com/web3stick/sticksocial.git
-git clone https://github.com/sleet-js/near-social-tool-box.git
-ls
-# sticksocial/  near-social-tool-box/
+mkdir -p ~/dev/sticksocial_working_directory && cd ~/dev/sticksocial_working_directory
 ```
 
-`near-social-js` is **not** cloned locally — read it on GitHub or `npm view near-social-js` for types. `near-kit` is pinned to `0.14.0` via `resolutions` in `near-social-tool-box/package.json` (see `NOTES.md`).
+Assume the dev may have already started the agent with these repos cloned. Check first, clone only what's missing:
+
+```bash
+ls
+# sticksocial/                ← required
+# near-social-tool-box/       ← required (testing playground)
+# near-social-js/             ← optional, useful for browsing the SDK source
+# near-kit-tool-box/          ← optional, source for @near-kit-tool-box/{web,env}
+```
+
+Cloning any that are missing:
+
+```bash
+git clone https://github.com/web3stick/sticksocial.git
+git clone https://github.com/sleet-js/near-social-tool-box.git
+git clone https://github.com/NEARBuilders/near-social-js.git          # optional
+git clone https://github.com/sleet-js/near-kit-tool-box.git          # optional
+```
+
+`near-kit` is pinned to `0.14.0` via `resolutions` in `near-social-tool-box/package.json` (see its `NOTES.md`).
 
 ---
 
@@ -56,26 +82,15 @@ netlify deploy --prod
 
 ## 3. Architecture
 
-```
-sticksocial/src/
-├── app.html / app.d.ts / routes/+layout.svelte
-├── lib/
-│   ├── near-social-js/
-│   │   ├── new.ts                    # near_social_client(near) factory → new Social({ near })
-│   │   ├── main/fun_*.ts             # 1 wrapper per near-social-js method
-│   │   └── helper/get_account_id_*.ts# composite helpers (post/comment/profile by id)
-│   ├── widgets/                      # *.svelte widgets + fun/ + components/
-│   ├── components/                   # app-level: nav.svelte, home_nav.svelte, button_auth.svelte
-│   ├── ts/auth.svelte.ts            # $state rune-based auth, near_connect_client().wallet()
-│   ├── ts/routes.ts                 # ROUTES const used by nav
-│   ├── css/                          # global stylesheets
-│   └── types/                        # shared TS types
-└── routes/
-    ├── +page.svelte                  # redirects → /feed
-    ├── feed/ (+page.svelte, options/+page.svelte)
-    ├── profile/ ([accountId]/+page.svelte, auth/, router/)
-    ├── settings/ discover/ notifications/ blank/
-```
+- `src/lib/near-social-js/new.ts` — `near_social_client(near)` factory wrapping `new Social({ near })`.
+- `src/lib/near-social-js/main/fun_*.ts` — one wrapper per `near-social-js` method, each with its inline `NEAR_SOCIAL_JS_<METHOD>_OPTIONS` interface.
+- `src/lib/near-social-js/helper/get_account_id_*.ts` — composite helpers that resolve a specific post/comment/profile by `(accountId, blockHeight?)`.
+- `src/lib/widgets/*.svelte` — Svelte 5 widgets. `widgets/fun/` for widget helpers, `widgets/components/` for subcomponents.
+- `src/lib/components/` — app-level components: `nav.svelte`, `home_nav.svelte`, `profile_nav.svelte`, `button_auth.svelte`.
+- `src/lib/ts/auth.svelte.ts` — `$state`-based auth (`auth.isSignedIn`, `auth.accountId`) using `near_connect_client().wallet()`.
+- `src/lib/ts/routes.ts` — `ROUTES` const consumed by nav.
+- `src/lib/css/`, `src/lib/types/` — global stylesheets and shared TS types.
+- `src/routes/` — SvelteKit pages. Top-level: `feed/` (with `options/`), `profile/[accountId]/`, `profile/auth/`, `profile/router/`, `settings/`, `discover/`, `notifications/`, `blank/`.
 
 `near-social-tool-box` mirrors `src/lib/near-social-js/` and adds `bin-env/main/` + `bin-env/helper/` CLI scripts that exercise every wrapper against real mainnet data.
 
@@ -167,21 +182,7 @@ If the upstream `Social` method you need isn't wrapped yet, follow §6 — add i
 
 ---
 
-## 8. Open work (from `sticksocial/TODO.md`)
-
-Priorities tracked in the repo. Don't start new ones until these are landed cleanly:
-
-- **Feed options**: persist `FeedOptions` (asc/desc, filters) to `localStorage`, type an interface, thread them through `get_activity_feed`. Use `FeedOptions` everywhere instead of inline `{ limit, from, order }`.
-- **Post component**: each `<Post>` should fetch its own post via `get_account_id_post` (already does) but also render the post-type cleanly (type field on `Post`).
-- **Like button** that sends a like tx and shows total likes (`fun_like`, `fun_get_likes`).
-- **Comment count + compose** (depends on compose flow).
-- **Post route** `/feed/post` or `/profile/<accountId>/post?blockHeight=…` showing a single post + comments.
-- **Repost button** (`fun_repost`, `fun_get_reposts` already wrapped).
-- **Long account-id line-break fix** on `/profile/[accountId]`.
-
----
-
-## 9. Quick sanity checklist before committing
+## 8. Quick sanity checklist before committing
 
 - [ ] Wrapper exists in **both** repos with matching options interface.
 - [ ] Tool-box bin runs and prints a real mainnet result; example added to `bin-env/README.md`.
