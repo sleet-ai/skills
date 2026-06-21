@@ -25,11 +25,7 @@ Sibling testing playground: [`sleet-js/near-social-tool-box`](https://github.com
 
 ## 1. Working directory
 
-Use a working folder whose name ends in `_working_directory` so it never collides with the repo name itself (avoid `sticksocial/sticksocial`).
-
-```bash
-mkdir -p ~/dev/sticksocial_working_directory && cd ~/dev/sticksocial_working_directory
-```
+Work on this project in a clean working directory, e.g. `sticksocial_working_directory`.
 
 Assume the dev may have already started the agent with these repos cloned. Check first, clone only what's missing:
 
