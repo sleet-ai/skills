@@ -4,6 +4,7 @@ personal skills libary playground
 
 internal skills
 - near-ft-top-100-holders
+- sleet-create-account
 
 external skills
 - https://degenarena.gg/SKILL.md
